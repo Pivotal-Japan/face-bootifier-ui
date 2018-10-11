@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Face Bootifier</title>
+    <style>
+        @media screen and (orientation: landscape) {
+            #landscape {
+                display: block;
+                width: 800px;
+            }
+
+            #portrait {
+                display: none;
+            }
+        }
+
+        @media screen and (orientation: portrait) {
+            #landscape {
+                display: none;
+            }
+
+            #portrait {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="landscape">
+    <p id="info">Capture your face and click.</p>
+    <video autoplay playsinline width="320" height="240"></video>
+    <img width="320" height="240" alt="">
+    <canvas style="display:none;" width="320" height="240"></canvas>
+    <script type="text/javascript">
+        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || window.navigator.mozGetUserMedia || navigator.msGetUserMedia;
+        window.URL = window.URL || window.webkitURL;
+
+        var video = document.querySelector('video');
+        var canvas = document.querySelector('canvas');
+        var ctx = canvas.getContext('2d');
+        var cameraEnabled = false;
+        var width = 320;
+        var height = 240;
+
+        navigator.getUserMedia({
+                audio: false, video: {
+                    facingMode: "user"
+                }
+            },
+            function (stream) {
+                video.srcObject = stream;
+                cameraEnabled = true;
+            },
+            function (error) {
+                alert(JSON.stringify(error));
+            }
+        );
+
+        function takeSnapshot() {
+            if (cameraEnabled) {
+                ctx.drawImage(video, 0, 0, width, height);
+                var dataUrl = canvas.toDataURL('image/jpeg');
+                var data = dataUrl.replace(/^.*,/, '');
+                var img = document.querySelector('img');
+                img.src = dataUrl;
+                img.width = width;
+                img.height = height;
+                var r = new XMLHttpRequest();
+                r.open("POST", "/", true);
+                var msg = document.getElementById("info").innerText;
+                document.getElementById("info").innerText = "Bootifying...";
+                r.onreadystatechange = function () {
+                    if (r.readyState !== 4 || r.status !== 200) return;
+                    document.querySelector('img').src = "data:image/jpeg;base64," + r.responseText;
+                    document.getElementById("info").innerText = msg;
+                };
+                r.setRequestHeader("Content-Type", "text/plain");
+                r.send(data);
+            }
+        }
+
+        video.addEventListener('click', takeSnapshot, false);
+    </script>
+</div>
+<div id="portrait">
+    <p>🔄 <strong>Rotate your screen!</strong></p>
+</div>
+</body>
+</html>
