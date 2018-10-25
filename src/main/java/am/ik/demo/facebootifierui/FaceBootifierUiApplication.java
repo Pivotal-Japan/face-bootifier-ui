@@ -1,17 +1,21 @@
 package am.ik.demo.facebootifierui;
 
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 
 @SpringBootApplication
 @RestController
@@ -30,6 +34,10 @@ public class FaceBootifierUiApplication {
 
     public FaceBootifierUiApplication(WebClient.Builder builder) {
         this.webClient = builder
+                .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
+                        .secure(spec -> spec.sslContext(SslContextBuilder.forClient()
+                                .trustManager(InsecureTrustManagerFactory.INSTANCE)))
+                        .compress(true)))
                 .build();
     }
 
