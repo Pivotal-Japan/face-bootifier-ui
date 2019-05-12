@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="https://d2bsvk2etkq8vr.cloudfront.net/pui-css/pui-components-16.0.0.css">
     <title>Face Bootifier</title>
     <style>
         @media screen and (orientation: landscape) {
@@ -26,14 +27,55 @@
                 display: block;
             }
         }
+
+        #landscape {
+            padding: 10px;
+        }
+
+        .pui-alert-info {
+            background-color: #c2e7ff;
+            border-color: #8ac0c4;
+        }
+
+        .pui-alert-success {
+            background-color: #b9ecac;
+            border-color: #008934;
+        }
+
+        .pui-alert {
+            border: none;
+            padding: 8px;
+            margin: 0;
+            color: #253640;
+        }
     </style>
 </head>
 <body>
 <div id="landscape">
-    <p id="info">Capture your face and click.</p>
-    <video autoplay playsinline width="320" height="240"></video>
-    <img width="320" height="240" alt="">
-    <canvas style="display:none;" width="320" height="240"></canvas>
+    <div class="pui-alert pui-alert-info" role="alert" id="alert">
+        <div class="grid">
+            <div class="col col-fixed col-middle pan">
+                <div class="icon icon-middle">
+                    <svg height="48" width="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" class="icon-info">
+                        <path d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm2 30h-4V22h4v12zm0-16h-4v-4h4v4z"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="col col-middle">
+                <div><span class="em-high">Info: </span><span id="info">Capture your face and click.</span></div>
+            </div>
+        </div>
+    </div>
+    <br/>
+    <div class="grid grid-show mbxl">
+        <div class="col col-sm">
+            <video autoplay playsinline width="320" height="240"></video>
+        </div>
+        <div class="col col-sm">
+            <img width="320" height="240" alt="">
+            <canvas style="display:none;" width="320" height="240"></canvas>
+        </div>
+    </div>
     <script type="text/javascript">
         navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || window.navigator.mozGetUserMedia || navigator.msGetUserMedia;
         window.URL = window.URL || window.webkitURL;
@@ -65,6 +107,7 @@
                 var dataUrl = canvas.toDataURL('image/jpeg');
                 var data = dataUrl.replace(/^.*,/, '');
                 var img = document.querySelector('img');
+                var alert = document.getElementById('alert');
                 img.src = dataUrl;
                 img.width = width;
                 img.height = height;
@@ -72,10 +115,12 @@
                 r.open("POST", "/", true);
                 var msg = document.getElementById("info").innerText;
                 document.getElementById("info").innerText = "Bootifying...";
+                alert.className = alert.className.replace('info', 'success');
                 r.onreadystatechange = function () {
                     if (r.readyState !== 4 || r.status !== 200) return;
                     document.querySelector('img').src = "data:image/jpeg;base64," + r.responseText;
                     document.getElementById("info").innerText = msg;
+                    alert.className = alert.className.replace('success', 'info');
                 };
                 r.setRequestHeader("Content-Type", "text/plain");
                 r.send(data);
